@@ -22,7 +22,33 @@ public class SellerDaoJDBC implements SellerDao {
 
     @Override
     public void insert(Seller seller) {
+        PreparedStatement stmt = null;
+        try {
+            stmt = conn.prepareStatement("INSERT INTO seller " +
+                    "(Name, Email, BirthDate, BaseSalary, DepartmentId) " +
+                    "VALUES (?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+            stmt.setString(1, seller.getName());
+            stmt.setString(2, seller.getEmail());
+            stmt.setDate(3, java.sql.Date.valueOf(seller.getDateOfBirth()));
+            stmt.setDouble(4, seller.getBaseSalary());
+            stmt.setInt(5, seller.getDepartment().getId());
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                ResultSet rs = stmt.getGeneratedKeys();
+                if (rs.next()) {
+                    int id = rs.getInt(1);
+                    seller.setId(id);
+                }
+                DB.closeResultSet(rs);
+            } else {
+                throw new DbExeption("Unexpected error, no rows affected");
+            }
 
+        } catch (SQLException e) {
+            throw new DbExeption(e.getMessage());
+        } finally {
+            DB.closeStatement(stmt);
+        }
     }
 
     @Override
