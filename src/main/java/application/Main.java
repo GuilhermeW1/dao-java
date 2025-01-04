@@ -1,4 +1,4 @@
-package org.example;
+package application;
 
 import db.DB;
 import model.entities.Department;

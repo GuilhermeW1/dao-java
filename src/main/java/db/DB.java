@@ -4,7 +4,11 @@
  */
 package db;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,15 +20,27 @@ public class DB {
     private static Connection conn = null;
     
    
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "postgres";
-    private static final String DB_NAME = "javaJDBC";
-    
+    private static final String USER = null;
+    private static final String PASSWORD = null;
+    private static final String DB_NAME = null;
+
+    private static Properties loadConfiguration() {
+        try (BufferedReader br = new BufferedReader(new FileReader("settings.txt"))) {
+            Properties prop = new Properties();
+            prop.load(br);
+            return prop;
+        } catch (IOException e) {
+            e.getMessage();
+            throw new DbExeption("Error loading database configuration");
+        }
+    }
+
     public static Connection getConnection() {
         if (conn != null) return conn;
-        
         try {
-            conn = DriverManager.getConnection("jdbc:postgresql://localhost:5432/"+DB_NAME, USER, PASSWORD);
+            Properties prop = loadConfiguration();
+            String url = prop.getProperty("dburl");
+            conn = DriverManager.getConnection(url, prop);
         } catch (SQLException ex) {
             throw new DbExeption(ex.getMessage());
         }
